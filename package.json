@@ -1,0 +1,53 @@
+{
+  "name": "video-cropper",
+  "version": "0.1.0",
+  "description": "Electron app to trim video segments with FFmpeg",
+  "main": "src/main.js",
+  "author": "",
+  "license": "MIT",
+  "scripts": {
+    "dev": "concurrently -k \"vite --host 127.0.0.1\" \"wait-on tcp:5173 && ELECTRON_START_URL=http://127.0.0.1:5173 electron .\"",
+    "start": "npm run build:renderer && electron .",
+    "build:renderer": "vite build",
+    "pack": "npm run build:renderer && electron-builder --dir",
+    "dist": "npm run build:renderer && electron-builder"
+  },
+  "dependencies": {
+    "@phosphor-icons/react": "^2.1.10",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-range": "^1.10.0",
+    "zustand": "^4.5.4"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.8",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.20",
+    "concurrently": "^8.2.2",
+    "daisyui": "^4.12.10",
+    "electron": "^30.0.0",
+    "electron-builder": "^24.13.3",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.10",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.2",
+    "wait-on": "^7.2.0"
+  },
+  "build": {
+    "appId": "com.displaynone.videocrop",
+    "productName": "Video Crop",
+    "files": [
+      "dist/renderer/**/*",
+      "src/main.js",
+      "src/preload.js",
+      "package.json"
+    ],
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Video"
+    }
+  }
+}

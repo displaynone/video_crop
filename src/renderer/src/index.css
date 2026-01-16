@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: "Space Grotesk", "Fira Sans", "Ubuntu", sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  background: radial-gradient(circle at top, rgba(255, 159, 69, 0.12), transparent 50%),
+    radial-gradient(circle at 20% 20%, rgba(44, 169, 255, 0.12), transparent 45%),
+    #0f1117;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.range-dual::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #f5c84c;
+  border: 2px solid #101420;
+  box-shadow: 0 0 0 2px rgba(245, 200, 76, 0.35);
+}
+
+.range-dual::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #f5c84c;
+  border: 2px solid #101420;
+  box-shadow: 0 0 0 2px rgba(245, 200, 76, 0.35);
+}
+
+.range-dual::-webkit-slider-runnable-track,
+.range-dual::-moz-range-track {
+  background: transparent;
+}
