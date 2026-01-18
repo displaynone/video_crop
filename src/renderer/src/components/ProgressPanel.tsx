@@ -12,13 +12,13 @@ const ProgressPanel: FC = () => {
 		<div className="card min-w-0 bg-transparent flex-1">
 			<div className="card-body gap-4 max-w-full min-w-0 p-0">
 				<div className="flex justify-between w-full">
-					<h2 className="card-title text-lg">Progreso</h2>
+					<h2 className="card-title text-lg">Progress</h2>
 					<button
 						className="btn btn-outline"
 						onClick={cancelExport}
 						disabled={!isExporting}
 					>
-						Cancelar
+						Cancel
 					</button>
 				</div>
 				<progress
@@ -28,7 +28,7 @@ const ProgressPanel: FC = () => {
 				/>
 				<p className="text-xs text-white/60 break-words">{label}</p>
 				<pre className="max-h-36 w-full overflow-auto whitespace-pre-wrap break-words rounded-xl border border-white/10 bg-black/40 p-3 text-[11px] text-white/70 text-wrap">
-					{log || "Sin log por ahora."}
+					{log || "No log yet."}
 				</pre>
 			</div>
 		</div>

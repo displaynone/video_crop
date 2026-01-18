@@ -53,11 +53,11 @@ app.on('window-all-closed', () => {
 
 ipcMain.handle('dialog:openVideo', async () => {
   const result = await dialog.showOpenDialog({
-    title: 'Selecciona un video',
+    title: 'Select a video',
     properties: ['openFile'],
     filters: [
       { name: 'Videos', extensions: ['mp4', 'mov', 'mkv', 'webm', 'avi'] },
-      { name: 'Todos', extensions: ['*'] }
+      { name: 'All', extensions: ['*'] }
     ]
   });
 
@@ -70,8 +70,8 @@ ipcMain.handle('dialog:openVideo', async () => {
 
 ipcMain.handle('dialog:saveVideo', async (_, suggestedName) => {
   const result = await dialog.showSaveDialog({
-    title: 'Guardar exportacion',
-    defaultPath: suggestedName || 'recorte.mp4',
+    title: 'Save export',
+    defaultPath: suggestedName || 'crop.mp4',
     filters: [
       { name: 'MP4', extensions: ['mp4'] }
     ]
@@ -86,19 +86,19 @@ ipcMain.handle('dialog:saveVideo', async (_, suggestedName) => {
 
 ipcMain.on('ffmpeg:run', (event, payload) => {
   if (runningProcess) {
-    event.sender.send('ffmpeg:error', 'Ya hay un proceso de exportacion en curso.');
+    event.sender.send('ffmpeg:error', 'An export process is already running.');
     return;
   }
 
-  const { inputPath, outputPath, startTime, endTime, mode } = payload;
+  const { inputPath, outputPath, startTime, endTime, mode, crop } = payload;
   if (!inputPath || !outputPath) {
-    event.sender.send('ffmpeg:error', 'Ruta de entrada o salida invalida.');
+    event.sender.send('ffmpeg:error', 'Invalid input or output path.');
     return;
   }
 
   const duration = Math.max(0, endTime - startTime);
   if (!Number.isFinite(duration) || duration <= 0) {
-    event.sender.send('ffmpeg:error', 'El rango de tiempo no es valido.');
+    event.sender.send('ffmpeg:error', 'The time range is not valid.');
     return;
   }
 
@@ -113,7 +113,30 @@ ipcMain.on('ffmpeg:run', (event, payload) => {
     String(duration)
   ];
 
-  if (mode === 'copy') {
+  const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+  const cropValues = crop && Number.isFinite(crop.x) && Number.isFinite(crop.y)
+    && Number.isFinite(crop.width) && Number.isFinite(crop.height)
+    ? {
+        x: clamp(crop.x, 0, 1),
+        y: clamp(crop.y, 0, 1),
+        width: clamp(crop.width, 0, 1),
+        height: clamp(crop.height, 0, 1)
+      }
+    : null;
+  const hasCrop = cropValues && cropValues.width > 0 && cropValues.height > 0;
+
+  if (hasCrop) {
+    const { x, y, width, height } = cropValues;
+    const cropFilter = [
+      `w=trunc(iw*${width}/2)*2`,
+      `h=trunc(ih*${height}/2)*2`,
+      `x=trunc(iw*${x}/2)*2`,
+      `y=trunc(ih*${y}/2)*2`
+    ].join(':');
+    args.push('-vf', `crop=${cropFilter}`);
+  }
+
+  if (mode === 'copy' && !hasCrop) {
     args.push('-c', 'copy');
   } else {
     args.push(
@@ -139,7 +162,7 @@ ipcMain.on('ffmpeg:run', (event, payload) => {
   runningProcess.on('error', (error) => {
     runningProcess = null;
     if (error.code === 'ENOENT') {
-      event.sender.send('ffmpeg:error', 'No se encontro ffmpeg en el sistema. Instala ffmpeg y reintenta.');
+      event.sender.send('ffmpeg:error', 'ffmpeg was not found on the system. Install ffmpeg and try again.');
       return;
     }
     event.sender.send('ffmpeg:error', `Error al iniciar ffmpeg: ${error.message}`);
@@ -161,7 +184,7 @@ ipcMain.on('ffmpeg:run', (event, payload) => {
       event.sender.send('ffmpeg:done');
       return;
     }
-    event.sender.send('ffmpeg:error', `ffmpeg termino con codigo ${code}`);
+    event.sender.send('ffmpeg:error', `ffmpeg exited with code ${code}`);
   });
 });
 

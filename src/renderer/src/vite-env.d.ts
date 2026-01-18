@@ -9,6 +9,7 @@ interface ElectronAPI {
     startTime: number;
     endTime: number;
     mode: 'reencode' | 'copy';
+    crop?: { x: number; y: number; width: number; height: number } | null;
   }) => void;
   cancelExport: () => void;
   onLog: (callback: (message: string) => void) => void;

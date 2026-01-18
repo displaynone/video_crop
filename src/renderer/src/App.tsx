@@ -32,12 +32,12 @@ const App = () => {
       const percent = (current / exportDuration) * 100;
       const safePercent = Math.min(100, Math.max(0, percent));
       setProgress(safePercent);
-      setProgressLabel(`Exportando... ${Math.floor(safePercent)}%`);
+      setProgressLabel(`Exporting... ${Math.floor(safePercent)}%`);
     };
     const handleDone = () => {
       setExportDuration(0);
       setProgress(100);
-      setProgressLabel('Exportacion finalizada.');
+      setProgressLabel('Export finished.');
       setIsExporting(false);
     };
     const handleError = (message: string) => {

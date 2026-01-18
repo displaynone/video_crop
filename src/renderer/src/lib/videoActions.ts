@@ -11,12 +11,18 @@ const loadVideoFromPath = (path: string) => {
 		clearLog,
 		setProgress,
 		setProgressLabel,
+		setCropEnabled,
+		setCropRect,
+		setCropAspectEnabled,
 	} = useVideoStore.getState();
 	setInputPath(path);
 	setOutputPath(null);
 	clearLog();
 	setProgress(0);
-	setProgressLabel("Esperando exportacion...");
+	setProgressLabel("Waiting for export...");
+	setCropEnabled(false);
+	setCropRect(null);
+	setCropAspectEnabled(false);
 };
 
 const openVideo = async () => {
@@ -29,10 +35,10 @@ const openVideo = async () => {
 
 const chooseOutput = async () => {
 	const { inputPath, setOutputPath } = useVideoStore.getState();
-	let suggested = "recorte.mp4";
+	let suggested = "crop.mp4";
 	if (inputPath) {
-		const name = inputPath.split("/").pop() || "recorte.mp4";
-		suggested = `recorte_${name}`.replace(/\s+/g, "_");
+		const name = inputPath.split("/").pop() || "crop.mp4";
+		suggested = `crop_${name}`.replace(/\s+/g, "_");
 	}
 	const path = await window.electronAPI.saveVideo(suggested);
 	if (!path) {
@@ -48,38 +54,51 @@ const startExport = () => {
 		startTime,
 		endTime,
 		mode,
+		cropEnabled,
+		cropRect,
+		setMode,
 		setExportDuration,
 		clearLog,
 		setProgress,
 		setProgressLabel,
 		setIsExporting,
-    setOutputPath,
+		setOutputPath,
 	} = useVideoStore.getState();
 
 	if (!inputPath) {
-		setProgressLabel("Selecciona un video primero.");
+		setProgressLabel("Select a video first.");
 		return;
 	}
 	if (!outputPath) {
-		setProgressLabel("Selecciona el destino de exportacion.");
+		setProgressLabel("Select the export destination.");
 		return;
 	}
 
 	const startSeconds = parseTime(startTime);
 	const endSeconds = parseTime(endTime);
 	if (!Number.isFinite(startSeconds) || !Number.isFinite(endSeconds)) {
-		setProgressLabel("Rango invalido.");
+		setProgressLabel("Invalid range.");
 		return;
 	}
 	if (endSeconds <= startSeconds) {
-		setProgressLabel("El tiempo de fin debe ser mayor que el inicio.");
+		setProgressLabel("End time must be greater than start time.");
 		return;
+	}
+
+	const hasCrop =
+		cropEnabled &&
+		cropRect &&
+		cropRect.width > 0 &&
+		cropRect.height > 0;
+	const exportMode = hasCrop && mode === "copy" ? "reencode" : mode;
+	if (exportMode !== mode) {
+		setMode(exportMode);
 	}
 
 	setExportDuration(endSeconds - startSeconds);
 	clearLog();
 	setProgress(0);
-	setProgressLabel("Exportando...");
+	setProgressLabel("Exporting...");
 	setIsExporting(true);
 	setOutputPath(null);
 
@@ -88,7 +107,8 @@ const startExport = () => {
 		outputPath,
 		startTime: startSeconds,
 		endTime: endSeconds,
-		mode,
+		mode: exportMode,
+		crop: hasCrop ? cropRect : null,
 	});
 };
 
@@ -98,7 +118,7 @@ const cancelExport = () => {
 	window.electronAPI.cancelExport();
 	setExportDuration(0);
 	setProgress(0);
-	setProgressLabel("Exportacion cancelada.");
+	setProgressLabel("Export canceled.");
 	setIsExporting(false);
 };
 

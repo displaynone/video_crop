@@ -1,28 +1,47 @@
 # Video Crop (Electron + FFmpeg)
 
-App de escritorio para Ubuntu que permite cargar un video grande, seleccionar un rango de tiempo y exportar el recorte usando `ffmpeg`.
+<img src="./assets/icon.png" width="124" />
 
-## Requisitos
+Desktop app for Ubuntu that lets you load a large video, select a time range, define an image crop, and export the result using `ffmpeg`.
 
+This app has been developed exclusively using vibecoding with Codex.
+
+<img src="./docs/app.png" />
+
+## What the app does and how it works
+
+- Open a local video and preview it inside the app.
+- Define a time range with a dual slider and frame controls.
+- Optionally enable image cropping, draw the area, and adjust its corners.
+- On export, the app runs `ffmpeg` to trim the time and, if there is an image crop, applies the `crop` filter.
+
+## Requirements
+
+- Only works on Ubuntu.
 - Node.js + npm
-- `ffmpeg` instalado en el sistema (`sudo apt install ffmpeg`)
+- `ffmpeg` installed on the system (`sudo apt install ffmpeg`)
 
-## Desarrollo
+## Installation
 
 ```bash
 npm install
+```
+
+## Development
+
+```bash
 npm run dev
 ```
 
-## Empaquetado para Ubuntu
+## Packaging for Ubuntu
 
 ```bash
 npm run dist
 ```
 
-Genera `AppImage` y `deb` en `dist/`.
+Generates `AppImage` and `deb` in `dist/`.
 
-## Notas
+## Notes
 
-- El modo "Reencode" es mas lento pero mas preciso.
-- El modo "Corte rapido" usa `-c copy` y puede cortar en el keyframe mas cercano.
+- "Re-encode" mode is slower but more precise.
+- "Fast cut" mode uses `-c copy` and may cut on the nearest keyframe.

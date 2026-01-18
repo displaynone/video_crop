@@ -16,6 +16,10 @@ interface VideoState {
   progressLabel: string;
   log: string;
   exportDuration: number;
+  cropEnabled: boolean;
+  cropRect: { x: number; y: number; width: number; height: number } | null;
+  cropAspectEnabled: boolean;
+  cropAspectRatio: { width: number; height: number };
 }
 
 interface VideoActions {
@@ -30,6 +34,12 @@ interface VideoActions {
   setProgress: (value: number) => void;
   setProgressLabel: (value: string) => void;
   setExportDuration: (value: number) => void;
+  setCropEnabled: (value: boolean) => void;
+  setCropRect: (
+    value: { x: number; y: number; width: number; height: number } | null
+  ) => void;
+  setCropAspectEnabled: (value: boolean) => void;
+  setCropAspectRatio: (value: { width: number; height: number }) => void;
   appendLog: (value: string) => void;
   clearLog: () => void;
 }
@@ -46,9 +56,13 @@ const initialState: VideoState = {
   currentTime: 0,
   isExporting: false,
   progress: 0,
-  progressLabel: 'Esperando exportacion...',
+  progressLabel: 'Waiting for export...',
   log: '',
-  exportDuration: 0
+  exportDuration: 0,
+  cropEnabled: false,
+  cropRect: null,
+  cropAspectEnabled: false,
+  cropAspectRatio: { width: 16, height: 9 }
 };
 
 const createVideoStore: StateCreator<VideoStore> = (set) => ({
@@ -64,6 +78,10 @@ const createVideoStore: StateCreator<VideoStore> = (set) => ({
   setProgress: (value) => set({ progress: value }),
   setProgressLabel: (value) => set({ progressLabel: value }),
   setExportDuration: (value) => set({ exportDuration: value }),
+  setCropEnabled: (value) => set({ cropEnabled: value }),
+  setCropRect: (value) => set({ cropRect: value }),
+  setCropAspectEnabled: (value) => set({ cropAspectEnabled: value }),
+  setCropAspectRatio: (value) => set({ cropAspectRatio: value }),
   appendLog: (value) => set((state: VideoStore) => ({ log: state.log + value })),
   clearLog: () => set({ log: '' })
 });

@@ -59,14 +59,14 @@ const InitialScreen: FC = () => {
           <ExportIcon size={32} />
         </div>
         <div className="flex max-w-2xl flex-col gap-3">
-          <p className="text-xs uppercase tracking-[0.45em] text-white/60">Arrastra tu video</p>
-          <h1 className="font-display text-4xl font-semibold">Suelta aqui para comenzar</h1>
+          <p className="text-xs uppercase tracking-[0.45em] text-white/60">Drag your video</p>
+          <h1 className="font-display text-4xl font-semibold">Drop here to start</h1>
           <p className="text-sm text-white/70">
-            Acepta archivos locales. Tambien puedes elegir un archivo desde el dialogo del sistema.
+            Accepts local files. You can also choose a file from the system dialog.
           </p>
         </div>
         <button className="btn btn-primary" onClick={openVideo}>
-          Elegir video
+          Choose video
         </button>
       </div>
     </section>
