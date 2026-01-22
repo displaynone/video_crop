@@ -1,6 +1,6 @@
 {
   "name": "video-cropper",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Electron app to trim video segments with FFmpeg",
   "main": "src/main.js",
   "author": {
