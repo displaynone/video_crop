@@ -10,6 +10,8 @@ import {
 	PlayIcon,
 	RewindIcon,
 	FastForwardIcon,
+	ArrowFatLineRightIcon,
+	ArrowFatLineLeftIcon,
 } from "@phosphor-icons/react";
 import { Range, getTrackBackground } from "react-range";
 import { Rnd } from "react-rnd";
@@ -379,11 +381,11 @@ const VideoPanel: FC<VideoPanelProps> = ({ videoRef }) => {
 					</button>
 					<button
 						className="btn btn-sm "
-						onClick={() => handleStepFrame("forward")}
-						aria-label="Next frame"
-						title="Next frame"
+						onClick={() => handleStepFrame("back")}
+						aria-label="Previous frame"
+						title="Previous frame"
 					>
-						<CaretDoubleRightIcon size={18} />
+						<CaretDoubleLeftIcon size={18} />
 					</button>
 					<button
 						className="btn btn-sm "
@@ -391,7 +393,7 @@ const VideoPanel: FC<VideoPanelProps> = ({ videoRef }) => {
 						aria-label="Back 5 seconds"
 						title="Back 5 seconds"
 					>
-						<RewindIcon size={18} />
+						<ArrowFatLineLeftIcon size={18} />
 					</button>
 					<button
 						className="btn btn-sm "
@@ -407,15 +409,15 @@ const VideoPanel: FC<VideoPanelProps> = ({ videoRef }) => {
 						aria-label="Forward 5 seconds"
 						title="Forward 5 seconds"
 					>
-						<FastForwardIcon size={18} />
+						<ArrowFatLineRightIcon size={18} />
 					</button>
 					<button
 						className="btn btn-sm "
-						onClick={() => handleStepFrame("back")}
-						aria-label="Previous frame"
-						title="Previous frame"
+						onClick={() => handleStepFrame("forward")}
+						aria-label="Next frame"
+						title="Next frame"
 					>
-						<CaretDoubleLeftIcon size={18} />
+						<CaretDoubleRightIcon size={18} />
 					</button>
 					<button className="btn btn-sm" onClick={setEndToCurrent}>
 						<HandSwipeRightIcon size={16} />
