@@ -6,6 +6,10 @@ import {
 	CropIcon,
 	HandSwipeLeftIcon,
 	HandSwipeRightIcon,
+	PauseIcon,
+	PlayIcon,
+	RewindIcon,
+	FastForwardIcon,
 } from "@phosphor-icons/react";
 import { Range, getTrackBackground } from "react-range";
 import { Rnd } from "react-rnd";
@@ -40,6 +44,7 @@ const VideoPanel: FC<VideoPanelProps> = ({ videoRef }) => {
 	const dragStartRef = useRef<{ x: number; y: number } | null>(null);
 	const [isSelecting, setIsSelecting] = useState(false);
 	const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+	const [isPlaying, setIsPlaying] = useState(false);
 
 	const frameStep = 1 / 30;
 	const startSeconds = Number.isFinite(parseTime(startTime)) ? parseTime(startTime) : 0;
@@ -223,12 +228,20 @@ const VideoPanel: FC<VideoPanelProps> = ({ videoRef }) => {
 		const handleTime = () => {
 			setCurrentTime(video.currentTime || 0);
 		};
+		const handlePlaying = () => setIsPlaying(true);
+		const handlePaused = () => setIsPlaying(false);
 		video.addEventListener("loadedmetadata", handleLoaded);
 		video.addEventListener("timeupdate", handleTime);
+		video.addEventListener("play", handlePlaying);
+		video.addEventListener("pause", handlePaused);
+		video.addEventListener("ended", handlePaused);
 
 		return () => {
 			video.removeEventListener("loadedmetadata", handleLoaded);
 			video.removeEventListener("timeupdate", handleTime);
+			video.removeEventListener("play", handlePlaying);
+			video.removeEventListener("pause", handlePaused);
+			video.removeEventListener("ended", handlePaused);
 		};
 	}, [setCurrentTime, setDuration, setEndTime, setStartTime, videoRef]);
 
@@ -250,6 +263,29 @@ const VideoPanel: FC<VideoPanelProps> = ({ videoRef }) => {
 				? Math.max(0, video.currentTime - frameStep)
 				: Math.min(duration || video.duration || Infinity, video.currentTime + frameStep);
 		video.currentTime = nextTime;
+	};
+
+	const handleJumpSeconds = (seconds: number) => {
+		const video = videoRef.current;
+		if (!video) {
+			return;
+		}
+		const maxTime =
+			Number.isFinite(duration) && duration > 0 ? duration : video.duration || Infinity;
+		const nextTime = Math.min(maxTime, Math.max(0, video.currentTime + seconds));
+		video.currentTime = nextTime;
+	};
+
+	const handleTogglePlayback = () => {
+		const video = videoRef.current;
+		if (!video) {
+			return;
+		}
+		if (video.paused) {
+			void video.play();
+		} else {
+			video.pause();
+		}
 	};
 
 	const handleRangeChange = (values: number[]) => {
@@ -343,19 +379,43 @@ const VideoPanel: FC<VideoPanelProps> = ({ videoRef }) => {
 					</button>
 					<button
 						className="btn btn-sm "
-						onClick={() => handleStepFrame("back")}
-						aria-label="Previous frame"
-						title="Previous frame"
-					>
-						<CaretDoubleLeftIcon size={18} />
-					</button>
-					<button
-						className="btn btn-sm "
 						onClick={() => handleStepFrame("forward")}
 						aria-label="Next frame"
 						title="Next frame"
 					>
 						<CaretDoubleRightIcon size={18} />
+					</button>
+					<button
+						className="btn btn-sm "
+						onClick={() => handleJumpSeconds(-5)}
+						aria-label="Back 5 seconds"
+						title="Back 5 seconds"
+					>
+						<RewindIcon size={18} />
+					</button>
+					<button
+						className="btn btn-sm "
+						onClick={handleTogglePlayback}
+						aria-label={isPlaying ? "Pause video" : "Play video"}
+						title={isPlaying ? "Pause video" : "Play video"}
+					>
+						{isPlaying ? <PauseIcon size={18} /> : <PlayIcon size={18} />}
+					</button>
+					<button
+						className="btn btn-sm "
+						onClick={() => handleJumpSeconds(5)}
+						aria-label="Forward 5 seconds"
+						title="Forward 5 seconds"
+					>
+						<FastForwardIcon size={18} />
+					</button>
+					<button
+						className="btn btn-sm "
+						onClick={() => handleStepFrame("back")}
+						aria-label="Previous frame"
+						title="Previous frame"
+					>
+						<CaretDoubleLeftIcon size={18} />
 					</button>
 					<button className="btn btn-sm" onClick={setEndToCurrent}>
 						<HandSwipeRightIcon size={16} />

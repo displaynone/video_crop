@@ -12,7 +12,7 @@ protocol.registerSchemesAsPrivileged([
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1100,
-    height: 700,
+    height: 760,
     backgroundColor: '#101116',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
