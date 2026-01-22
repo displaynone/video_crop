@@ -1,22 +1,20 @@
-import type { ChangeEvent, FC, MouseEvent } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
 import {
+	ArrowFatLineLeftIcon,
+	ArrowFatLineRightIcon,
 	CaretDoubleLeftIcon,
 	CaretDoubleRightIcon,
 	CropIcon,
 	HandSwipeLeftIcon,
 	HandSwipeRightIcon,
 	PauseIcon,
-	PlayIcon,
-	RewindIcon,
-	FastForwardIcon,
-	ArrowFatLineRightIcon,
-	ArrowFatLineLeftIcon,
+	PlayIcon
 } from "@phosphor-icons/react";
+import type { ChangeEvent, FC, MouseEvent } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Range, getTrackBackground } from "react-range";
 import { Rnd } from "react-rnd";
-import { setEndToCurrent, setStartToCurrent } from "../lib/videoActions";
 import { formatTime, parseTime } from "../lib/time";
+import { setEndToCurrent, setStartToCurrent } from "../lib/videoActions";
 import { useVideoStore } from "../store/useVideoStore";
 
 interface VideoPanelProps {
