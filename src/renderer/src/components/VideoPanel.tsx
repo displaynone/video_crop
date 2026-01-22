@@ -45,6 +45,7 @@ const VideoPanel: FC<VideoPanelProps> = ({ videoRef }) => {
 	const [isSelecting, setIsSelecting] = useState(false);
 	const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 	const [isPlaying, setIsPlaying] = useState(false);
+	const [videoSize, setVideoSize] = useState({ width: 0, height: 0 });
 
 	const frameStep = 1 / 30;
 	const startSeconds = Number.isFinite(parseTime(startTime)) ? parseTime(startTime) : 0;
@@ -64,12 +65,15 @@ const VideoPanel: FC<VideoPanelProps> = ({ videoRef }) => {
 		cropAspectEnabled && cropAspectRatio.width > 0 && cropAspectRatio.height > 0
 			? cropAspectRatio.width / cropAspectRatio.height
 			: null;
+	const videoAspectRatio =
+		videoSize.width > 0 && videoSize.height > 0 ? videoSize.width / videoSize.height : null;
 	const containerAspectRatio =
 		containerSize.width > 0 && containerSize.height > 0
 			? containerSize.width / containerSize.height
 			: null;
+	const baseAspectRatio = videoAspectRatio || containerAspectRatio;
 	const normalizedAspectRatio =
-		aspectRatio && containerAspectRatio ? aspectRatio / containerAspectRatio : null;
+		aspectRatio && baseAspectRatio ? aspectRatio / baseAspectRatio : null;
 
 	const applyAspectRatio = useCallback(
 		(rect: { x: number; y: number; width: number; height: number }) => {
@@ -224,6 +228,7 @@ const VideoPanel: FC<VideoPanelProps> = ({ videoRef }) => {
 			setDuration(video.duration || 0);
 			setStartTime("00:00:00");
 			setEndTime(formatTime(video.duration || 0));
+			setVideoSize({ width: video.videoWidth || 0, height: video.videoHeight || 0 });
 		};
 		const handleTime = () => {
 			setCurrentTime(video.currentTime || 0);
@@ -311,7 +316,13 @@ const VideoPanel: FC<VideoPanelProps> = ({ videoRef }) => {
 			<div ref={videoContainerRef} className="relative overflow-hidden">
 				<video
 					ref={videoRef}
-					className="aspect-video w-full rounded-2xl bg-black/40"
+					className="w-full rounded-2xl bg-black/40 object-contain"
+					style={{
+						aspectRatio:
+							videoSize.width > 0 && videoSize.height > 0
+								? `${videoSize.width} / ${videoSize.height}`
+								: "16 / 9",
+					}}
 					controls={!cropEnabled}
 				/>
 				{cropEnabled && (!cropRect || isSelecting) && (
