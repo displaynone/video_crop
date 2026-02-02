@@ -14,15 +14,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Range, getTrackBackground } from "react-range";
 import { Rnd } from "react-rnd";
 import { formatTime, parseTime } from "../lib/time";
+import { useVideoSetup } from "../lib/useVideoSetup";
 import { setEndToCurrent, setStartToCurrent } from "../lib/videoActions";
 import { useVideoStore } from "../store/useVideoStore";
 
 interface VideoPanelProps {
 	videoRef: React.RefObject<HTMLVideoElement | null>;
+	onOpenPath: () => void;
 }
 
-const VideoPanel: FC<VideoPanelProps> = ({ videoRef }) => {
-	const inputPath = useVideoStore((state) => state.inputPath);
+const VideoPanel: FC<VideoPanelProps> = ({ videoRef, onOpenPath }) => {
 	const startTime = useVideoStore((state) => state.startTime);
 	const endTime = useVideoStore((state) => state.endTime);
 	const duration = useVideoStore((state) => state.duration);
@@ -33,8 +34,6 @@ const VideoPanel: FC<VideoPanelProps> = ({ videoRef }) => {
 	const cropAspectRatio = useVideoStore((state) => state.cropAspectRatio);
 	const setStartTime = useVideoStore((state) => state.setStartTime);
 	const setEndTime = useVideoStore((state) => state.setEndTime);
-	const setDuration = useVideoStore((state) => state.setDuration);
-	const setCurrentTime = useVideoStore((state) => state.setCurrentTime);
 	const setCropEnabled = useVideoStore((state) => state.setCropEnabled);
 	const setCropRect = useVideoStore((state) => state.setCropRect);
 	const setCropAspectEnabled = useVideoStore((state) => state.setCropAspectEnabled);
@@ -219,44 +218,10 @@ const VideoPanel: FC<VideoPanelProps> = ({ videoRef }) => {
 		setCropRect(normalizedAspectRatio ? applyAspectRatio(normalized) : normalized);
 	};
 
-	useEffect(() => {
-		const video = videoRef.current;
-		if (!video) {
-			return;
-		}
-		const handleLoaded = () => {
-			setDuration(video.duration || 0);
-			setStartTime("00:00:00");
-			setEndTime(formatTime(video.duration || 0));
-			setVideoSize({ width: video.videoWidth || 0, height: video.videoHeight || 0 });
-		};
-		const handleTime = () => {
-			setCurrentTime(video.currentTime || 0);
-		};
-		const handlePlaying = () => setIsPlaying(true);
-		const handlePaused = () => setIsPlaying(false);
-		video.addEventListener("loadedmetadata", handleLoaded);
-		video.addEventListener("timeupdate", handleTime);
-		video.addEventListener("play", handlePlaying);
-		video.addEventListener("pause", handlePaused);
-		video.addEventListener("ended", handlePaused);
-
-		return () => {
-			video.removeEventListener("loadedmetadata", handleLoaded);
-			video.removeEventListener("timeupdate", handleTime);
-			video.removeEventListener("play", handlePlaying);
-			video.removeEventListener("pause", handlePaused);
-			video.removeEventListener("ended", handlePaused);
-		};
-	}, [setCurrentTime, setDuration, setEndTime, setStartTime, videoRef]);
-
-	useEffect(() => {
-		const video = videoRef.current;
-		if (!video || !inputPath) {
-			return;
-		}
-		video.src = `media://${encodeURI(inputPath)}`;
-	}, [inputPath, videoRef]);
+	useVideoSetup(videoRef, {
+		onVideoSize: setVideoSize,
+		onIsPlaying: setIsPlaying,
+	});
 
 	const handleStepFrame = (direction: "back" | "forward") => {
 		const video = videoRef.current;
@@ -513,6 +478,9 @@ const VideoPanel: FC<VideoPanelProps> = ({ videoRef }) => {
 						disabled={!cropRect}
 					>
 						Clear crop
+					</button>
+					<button className="btn btn-sm btn-outline" onClick={onOpenPath}>
+						Path
 					</button>
 				</div>
 				<div className="flex flex-wrap items-center gap-2">

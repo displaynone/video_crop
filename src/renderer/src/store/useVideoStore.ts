@@ -20,6 +20,9 @@ interface VideoState {
   cropRect: { x: number; y: number; width: number; height: number } | null;
   cropAspectEnabled: boolean;
   cropAspectRatio: { width: number; height: number };
+  cropPathEnabled: boolean;
+  cropPathStart: { x: number; y: number; width: number; height: number } | null;
+  cropPathEnd: { x: number; y: number; width: number; height: number } | null;
 }
 
 interface VideoActions {
@@ -40,6 +43,13 @@ interface VideoActions {
   ) => void;
   setCropAspectEnabled: (value: boolean) => void;
   setCropAspectRatio: (value: { width: number; height: number }) => void;
+  setCropPathEnabled: (value: boolean) => void;
+  setCropPathStart: (
+    value: { x: number; y: number; width: number; height: number } | null
+  ) => void;
+  setCropPathEnd: (
+    value: { x: number; y: number; width: number; height: number } | null
+  ) => void;
   appendLog: (value: string) => void;
   clearLog: () => void;
 }
@@ -62,7 +72,10 @@ const initialState: VideoState = {
   cropEnabled: false,
   cropRect: null,
   cropAspectEnabled: false,
-  cropAspectRatio: { width: 16, height: 9 }
+  cropAspectRatio: { width: 16, height: 9 },
+  cropPathEnabled: false,
+  cropPathStart: null,
+  cropPathEnd: null
 };
 
 const createVideoStore: StateCreator<VideoStore> = (set) => ({
@@ -82,6 +95,9 @@ const createVideoStore: StateCreator<VideoStore> = (set) => ({
   setCropRect: (value) => set({ cropRect: value }),
   setCropAspectEnabled: (value) => set({ cropAspectEnabled: value }),
   setCropAspectRatio: (value) => set({ cropAspectRatio: value }),
+  setCropPathEnabled: (value) => set({ cropPathEnabled: value }),
+  setCropPathStart: (value) => set({ cropPathStart: value }),
+  setCropPathEnd: (value) => set({ cropPathEnd: value }),
   appendLog: (value) => set((state: VideoStore) => ({ log: state.log + value })),
   clearLog: () => set({ log: '' })
 });

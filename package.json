@@ -1,16 +1,16 @@
 {
   "name": "video-cropper",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Electron app to trim video segments with FFmpeg",
   "main": "src/main.js",
   "author": {
     "name": "Displaynone",
-    "email": "dev@example.com"
+    "email": "displaynone@gmail.com"
   },
-  "homepage": "https://example.com",
+  "homepage": "https://sentidoweb.com",
   "repository": {
     "type": "git",
-    "url": "https://example.com/repo.git"
+    "url": "https://github.com/displaynone/video_crop.git"
   },
   "license": "MIT",
   "scripts": {

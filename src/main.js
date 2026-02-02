@@ -90,7 +90,7 @@ ipcMain.on('ffmpeg:run', (event, payload) => {
     return;
   }
 
-  const { inputPath, outputPath, startTime, endTime, mode, crop } = payload;
+  const { inputPath, outputPath, startTime, endTime, mode, crop, cropPath } = payload;
   if (!inputPath || !outputPath) {
     event.sender.send('ffmpeg:error', 'Invalid input or output path.');
     return;
@@ -114,18 +114,36 @@ ipcMain.on('ffmpeg:run', (event, payload) => {
   ];
 
   const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
-  const cropValues = crop && Number.isFinite(crop.x) && Number.isFinite(crop.y)
-    && Number.isFinite(crop.width) && Number.isFinite(crop.height)
+  const normalizeRect = (rect) => rect && Number.isFinite(rect.x)
+    && Number.isFinite(rect.y) && Number.isFinite(rect.width)
+    && Number.isFinite(rect.height)
     ? {
-        x: clamp(crop.x, 0, 1),
-        y: clamp(crop.y, 0, 1),
-        width: clamp(crop.width, 0, 1),
-        height: clamp(crop.height, 0, 1)
+        x: clamp(rect.x, 0, 1),
+        y: clamp(rect.y, 0, 1),
+        width: clamp(rect.width, 0, 1),
+        height: clamp(rect.height, 0, 1)
       }
     : null;
+  const cropValues = normalizeRect(crop);
+  const cropPathStart = normalizeRect(cropPath?.start);
+  const cropPathEnd = normalizeRect(cropPath?.end);
   const hasCrop = cropValues && cropValues.width > 0 && cropValues.height > 0;
+  const hasPath = cropPathStart && cropPathEnd
+    && cropPathStart.width > 0 && cropPathStart.height > 0
+    && cropPathEnd.width > 0 && cropPathEnd.height > 0;
 
-  if (hasCrop) {
+  if (hasPath) {
+    const safeDuration = duration > 0 ? duration : 1;
+    const lerpExpr = (from, to) =>
+      `(${from}+(${to}-${from})*min(max(t/${safeDuration}\\,0)\\,1))`;
+    const cropFilter = [
+      `w=trunc(iw*${lerpExpr(cropPathStart.width, cropPathEnd.width)}/2)*2`,
+      `h=trunc(ih*${lerpExpr(cropPathStart.height, cropPathEnd.height)}/2)*2`,
+      `x=trunc(iw*${lerpExpr(cropPathStart.x, cropPathEnd.x)}/2)*2`,
+      `y=trunc(ih*${lerpExpr(cropPathStart.y, cropPathEnd.y)}/2)*2`
+    ].join(':');
+    args.push('-vf', `crop=${cropFilter}:eval=frame`);
+  } else if (hasCrop) {
     const { x, y, width, height } = cropValues;
     const cropFilter = [
       `w=trunc(iw*${width}/2)*2`,
@@ -136,7 +154,7 @@ ipcMain.on('ffmpeg:run', (event, payload) => {
     args.push('-vf', `crop=${cropFilter}`);
   }
 
-  if (mode === 'copy' && !hasCrop) {
+  if (mode === 'copy' && !hasCrop && !hasPath) {
     args.push('-c', 'copy');
   } else {
     args.push(
@@ -157,6 +175,7 @@ ipcMain.on('ffmpeg:run', (event, payload) => {
 
   args.push(outputPath);
 
+  let hasEvalError = false;
   runningProcess = spawn('ffmpeg', args, { windowsHide: true });
 
   runningProcess.on('error', (error) => {
@@ -170,6 +189,9 @@ ipcMain.on('ffmpeg:run', (event, payload) => {
 
   runningProcess.stderr.on('data', (data) => {
     const text = data.toString();
+    if (text.includes("Error applying option 'eval'") || text.includes('Option not found')) {
+      hasEvalError = true;
+    }
     event.sender.send('ffmpeg:log', text);
 
     const match = text.match(/time=([0-9:.]+)/);
@@ -180,6 +202,13 @@ ipcMain.on('ffmpeg:run', (event, payload) => {
 
   runningProcess.on('close', (code) => {
     runningProcess = null;
+    if (hasEvalError) {
+      event.sender.send(
+        'ffmpeg:error',
+        'Tu versión de ffmpeg no soporta crop dinámico (eval=frame). Actualiza ffmpeg para usar Path.'
+      );
+      return;
+    }
     if (code === 0) {
       event.sender.send('ffmpeg:done');
       return;

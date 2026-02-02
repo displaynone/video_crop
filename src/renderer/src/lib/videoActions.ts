@@ -14,6 +14,9 @@ const loadVideoFromPath = (path: string) => {
 		setCropEnabled,
 		setCropRect,
 		setCropAspectEnabled,
+		setCropPathEnabled,
+		setCropPathStart,
+		setCropPathEnd,
 	} = useVideoStore.getState();
 	setInputPath(path);
 	setOutputPath(null);
@@ -23,6 +26,9 @@ const loadVideoFromPath = (path: string) => {
 	setCropEnabled(false);
 	setCropRect(null);
 	setCropAspectEnabled(false);
+	setCropPathEnabled(false);
+	setCropPathStart(null);
+	setCropPathEnd(null);
 };
 
 const openVideo = async () => {
@@ -56,6 +62,9 @@ const startExport = () => {
 		mode,
 		cropEnabled,
 		cropRect,
+		cropPathEnabled,
+		cropPathStart,
+		cropPathEnd,
 		setMode,
 		setExportDuration,
 		clearLog,
@@ -90,7 +99,17 @@ const startExport = () => {
 		cropRect &&
 		cropRect.width > 0 &&
 		cropRect.height > 0;
-	const exportMode = hasCrop && mode === "copy" ? "reencode" : mode;
+	const effectivePathStart = cropPathStart ?? cropRect ?? null;
+	const effectivePathEnd = cropPathEnd ?? cropRect ?? null;
+	const hasPath =
+		cropPathEnabled &&
+		effectivePathStart &&
+		effectivePathEnd &&
+		effectivePathStart.width > 0 &&
+		effectivePathStart.height > 0 &&
+		effectivePathEnd.width > 0 &&
+		effectivePathEnd.height > 0;
+	const exportMode = (hasCrop || hasPath) && mode === "copy" ? "reencode" : mode;
 	if (exportMode !== mode) {
 		setMode(exportMode);
 	}
@@ -108,7 +127,8 @@ const startExport = () => {
 		startTime: startSeconds,
 		endTime: endSeconds,
 		mode: exportMode,
-		crop: hasCrop ? cropRect : null,
+		crop: hasPath ? null : hasCrop ? cropRect : null,
+		cropPath: hasPath ? { start: effectivePathStart, end: effectivePathEnd } : null,
 	});
 };
 
